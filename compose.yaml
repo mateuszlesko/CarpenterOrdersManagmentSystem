@@ -1,0 +1,43 @@
+services:
+  web:
+    depends_on:
+      - db
+    build: .
+    ports: 
+      - "5246:5246"
+      - "8088:8088"
+    networks:
+      - services_net
+      - db_bridge
+
+  db:
+    container_name: carpenter_orders_db
+    image: mcr.microsoft.com/mssql/server:2025-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      #MSSQL_PID: ${MSSQL_PID}:-CSHOP-12345}
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-@dm1N123!}"
+    volumes:
+      - mssqlsystem:/var/opt/mssql
+      - mssqluser:/var/opt/sqlserver
+      - ./mssql/:/usr/src/app/
+    ports:
+      - "${MSSQL_PORT:-1433}:1433"
+    networks:
+      - db_bridge
+    working_dir: /usr/src/app
+    command: sh -c "/opt/mssql/bin/sqlservr"
+    restart: unless-stopped
+    
+
+networks:
+  services_net:
+    external: true
+  db_bridge:
+    internal: true
+    driver: bridge
+
+
+volumes:
+  mssqlsystem:
+  mssqluser:
