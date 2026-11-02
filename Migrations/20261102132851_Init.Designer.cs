@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarpenterOrdersManagmentSystem.Migrations
 {
     [DbContext(typeof(CarpenterOrdersContext))]
-    [Migration("20261030150941_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20261102132851_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

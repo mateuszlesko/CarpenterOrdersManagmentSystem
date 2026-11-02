@@ -1,7 +1,8 @@
 services:
   web:
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     build: .
     ports: 
       - "5246:5246"
@@ -17,16 +18,22 @@ services:
       ACCEPT_EULA: "Y"
       #MSSQL_PID: ${MSSQL_PID}:-CSHOP-12345}
       MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-@dm1N123!}"
+      SQL_CARPENTER_USER: "${SQL_CARPENTER_USER:-admin}"
+      SQL_CARPENTER_PASSWORD: "${SQL_CARPENTER_PASSWORD:-P@ssword}"
     volumes:
       - mssqlsystem:/var/opt/mssql
       - mssqluser:/var/opt/sqlserver
-      - ./mssql/:/usr/src/app/
+      - ./mssql/:/opt/app/
     ports:
       - "${MSSQL_PORT:-1433}:1433"
     networks:
       - db_bridge
-    working_dir: /usr/src/app
-    command: sh -c "/opt/mssql/bin/sqlservr"
+    working_dir: /opt/app
+    command: sh -c "/opt/mssql/bin/sqlservr && echo 'Server started' && ./config/entrypoint.sh"
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd","-C","-S", "localhost", "-U","sa","-P","${MSSQL_SA_PASSWORD}", "-Q", "select 1"]
+      interval: 1s
+      retries: 20
     restart: unless-stopped
     
 
@@ -34,7 +41,6 @@ networks:
   services_net:
     external: true
   db_bridge:
-    internal: true
     driver: bridge
 
 
